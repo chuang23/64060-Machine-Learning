@@ -1,0 +1,38 @@
+
+# first I will set my directory to the file where I saved my .csv file
+Annie <- read.csv("Daily Words Spoken.csv")
+install.packages("caret")
+library(caret)
+
+# Descriptive statistics
+summary(Annie)
+sd(Annie$WordsPerDay)
+colnames(Annie)
+str(Annie)
+head(Annie)
+mean(Annie$WordsPerDay)
+sd(Annie$WordsPerDay)
+median(Annie$WordsPerDay)
+max(Annie$WordsPerDay)
+min(Annie$WordsPerDay)
+skewness(Annie$WordsPerDay)
+range(Annie$WordsPerDay)
+
+
+which.max(Annie$WordsPerDay)
+
+order(Annie$WordsPerDay)
+Annie[c(16, 12, 9, 18, 1),]
+
+install.packages("moments")
+library(moments)
+skewness(Annie$WordsPerDay)
+
+# now we can transform some data
+hist(Annie$WordsPerDay, col= "Pink")
+hist(log10(Annie$WordsPerDay))
+
+
+install.packages
+plot(Annie$WordsPerDay, Annie$name, main= "scaterplot", xlab= "Wordsperday", ylab= "name" )
+
