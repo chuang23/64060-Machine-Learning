@@ -1,0 +1,55 @@
+---
+title: "assignment3"
+author: "Annie"
+date: "10/24/2019"
+output: html_document
+---
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+```{r}
+library(caret)
+library(FNN)
+library(ISLR)
+library(e1071)
+library(gmodels)
+library(dummies)
+library(dplyr)
+setwd("~/Desktop/Machine Learning 64060/10242019")
+Data <- read.csv("FlightDelays.csv")
+Data$CRS_DEP_TIME<-as.factor(Data$CRS_DEP_TIME)
+Data$DAY_WEEK<-as.factor(Data$DAY_WEEK)
+Annie <- Data[,c(1,2,4,8,10,13)]
+```
+
+```{r}
+Index_Train <- createDataPartition(Annie$CRS_DEP_TIME,p= 0.6, list=FALSE) 
+Train <- Annie[Index_Train,]
+Validation <-Annie[-Index_Train,]
+```
+```{r}
+nb_model <-naiveBayes(Flight.Status~CRS_DEP_TIME+DEST+CARRIER+DAY_WEEK+ORIGIN,data = Train)
+nb_model
+```
+```{r}
+CrossTable(x=Train$DEST,y=Train$Flight.Status, prop.chisq = FALSE) 
+prop.table(table(Train$DEST, Train$Flight.Status))
+
+Predicted_Valid_labels <-predict(nb_model, Validation)
+CrossTable(x=Validation$Flight.Status, y=Predicted_Valid_labels, prop.chisq = FALSE) 
+confusionMatrix(Predicted_Valid_labels, Validation$Flight.Status)
+
+Predicted_Valid_labels1 <-predict(nb_model, Validation, type= "raw")
+head(Predicted_Valid_labels1)
+
+library(pROC)
+roc(Validation$Flight.Status, Predicted_Valid_labels1[,2])  
+plot.roc(Validation$Flight.Status, Predicted_Valid_labels1[,2])
+
+```
+
