@@ -1,0 +1,159 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+library(caret)
+library(ISLR)
+library(dplyr)
+library(ggvis)
+library(cluster)
+library(class)
+library(FNN)
+library(ggplot2)
+library(devtools)
+library(htmltools)
+library(dummies)
+library(tidyverse)
+library(stats)
+library(GGally)
+library(viridis)
+library(factoextra)
+```
+
+```{r}
+setwd("~/Desktop/Machine Learning 64060/11:14:2019")
+cereals_Data <- read.csv("Cereals.csv")
+
+cereals <- na.omit(cereals_Data)
+```
+
+```{r}
+cereals_Data_continous <- cereals[,-c(1,2,3)]
+str(cereals_Data_continous)
+```
+
+```{r}
+cereals_Data_continous$shelf <- as.factor(cereals_Data_continous$shelf)
+cereals_dummy <- dummyVars(~shelf,data=cereals_Data_continous)
+head(predict(cereals_dummy,cereals_Data_continous))
+cereal <- dummy.data.frame(cereals_Data_continous, names = c("shelf"), sep= ".")
+```
+
+```{r}
+cereal_normalized <- scale(cereal)
+Agnes <- c("single", "ward", "complete", "average")
+names(Agnes) <- c("single", "ward", "complete", "average")
+ac <- function(x) {
+  agnes(cereal_normalized, method = x)$ac}
+map_dbl(Agnes, ac)
+```
+* Ward's method is the highest.
+
+```{r}
+dist <- dist(cereal_normalized, method = "euclidean")
+hc <- hclust(dist, method = "ward.D2")
+plot(hc, cex = 0.6, hang = -1, main = "Dendrogram of agnes")
+```
+
+```{r}
+clusters <- cutree(hc, k = 4)
+table(clusters)
+cereals_clusters <- cbind(clusters, cereal_normalized)
+```
+
+```{r}
+colnames(cereals_clusters)[1] <- "clusters"
+
+head(cereals_clusters)
+```
+ 
+```{r}
+plot(hc, cex= 0.6, hang = -1)
+rect.hclust(hc, k = 4, border = 2:7)
+abline(h = 14, col = 'black')
+```
+
+```{r}
+row.names(cereal_normalized) <- paste(clusters, ": ", row.names(cereal), sep = "")
+
+heatmap(as.matrix(cereal_normalized), Colv = NA, hclustfun = hclust, 
+        col=rev(paste("gray",1:99,sep="")))
+```
+ 
+```{r}
+A<-cereal[1:60,] 
+B<-cereal[61:74,]
+A_norm <- scale(A)
+B_norm <- scale(B)
+```
+ 
+```{r, fig.height=7, fig.width=12}
+dist_A <- dist(A_norm, method = "euclidean")
+h_A <- hclust(dist_A, method = "ward.D")
+clusters_A <- cutree(h_A, k = 4)
+
+cereal_A <- cbind(clusters_A, A_norm)
+colnames(cereal_A)[1] <- "clust_A"
+plot(h_A, cex= 0.6, hang = -1)
+
+rect.hclust(h_A, k = 4, border = 2:7)
+abline(h = 20, col = 'Black')
+table(clusters_A)
+```
+
+```{r}
+hm <- tapply(A_norm, list(rep(cutree(h_A, 4), ncol(A_norm)), col(A_norm)), mean)
+colnames(hm) <-colnames(cereal)
+
+hm
+```
+
+```{r, fig.height=7, fig.width=13}
+
+ggparcoord((hm),
+           columns = 1:15, groupColumn = 1, 
+           showPoints = TRUE, 
+           alphaLines = 0.3 
+)
+```
+
+```{r}
+
+a<-data.frame(observations=seq(1,14,1),cluster=rep(0,14))
+for(i in 0:14)
+{
+  x1<-as.data.frame(rbind(hm,B_norm[i,]))
+  y1<-as.matrix(get_dist(x1))
+  a[i,2]<-which.min(y1[4,-4])
+}
+rownames(a) <-rownames(B_norm)
+
+a
+```
+```{r}
+cbind(partition=a$cluster,all.data=cereals_clusters[61:74,1])
+
+```
+
+```{r}
+table(a$cluster==cereals_clusters[61:74,1])
+```
+* the accuracy is not to high
+
+* Extracting clustersrs
+```{r}
+groups <- clusters
+print_clusters <- function(labels, k) {
+  for(i in 1:k) {
+    print(paste("cluster", i))
+print(cereals[labels==i,c("calories","protein","fat","sodium","fiber","carbo","sugars","potass","vitamins")])}}
+print_clusters(groups, 4)
+```
+
+```{r}
+# Cluster 1 will be the "healthy cluster" becasue it has the highest rating of neutritional factors.
+
+# Becasue the rang of the data is not in the same scale.
