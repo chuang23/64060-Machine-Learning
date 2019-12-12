@@ -70,7 +70,7 @@ for (i in 2:15)
                        centers=i)$withinss)
 plot(1:15, wss, type="b", xlab="Number of Clusters", 
      ylab="Within groups sum of squares",
-     main="Assessing the Optimal Number of Clusters with the Elbow Method",
+     main="Assessing the Optimal Number of Clusters",
      pch=19, cex=2)
 ```
 
@@ -129,7 +129,7 @@ for (i in 2:15)
 ```{r}
 plot(1:15, wss, type="b", xlab="Number of Clusters", 
      ylab="Within groups sum of squares",
-     main="Assessing the Optimal Number of Clusters with the Elbow Method",
+     main="Assessing the Optimal Number of Clusters",
      pch=20, cex=2)
 ```
 
